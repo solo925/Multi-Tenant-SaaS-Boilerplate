@@ -1,0 +1,73 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Environment variables
+.env
+*.env
+.env.*
+
+# Django specific
+db.sqlite3
+*.log
+local_settings.py
+media/
+staticfiles/
+static_root/
+tmp/
+*.pot
+*.pyc
+
+# Django migrations
+**/migrations/*.py
+**/migrations/*.pyc
+!*/migrations/__init__.py
+
+# Pytest
+.cache/
+.pytest_cache/
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# VSCode
+.vscode/
+
+# IDEs
+.idea/
+*.swp
+*.swo
+
+# MySQL / Postgres dumps
+*.sql
+*.dump
+
+# Docker
+docker-compose.override.yml
+*.pid
+
+# Node (optional, if using npm or Tailwind)
+node_modules/
+npm-debug.log
+yarn.lock
+
+# System
+.DS_Store
+Thumbs.db
