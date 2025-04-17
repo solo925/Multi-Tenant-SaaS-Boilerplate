@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class BillingConfig(AppConfig):
+class SharedUsersConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.billing'
+    name = 'apps.shared_users'
