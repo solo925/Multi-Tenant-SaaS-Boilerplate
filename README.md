@@ -1,180 +1,196 @@
-# Multi-Tenant SaaS Boilerplate
+# 🚀 Multi-Tenant SaaS Boilerplate
 
 ## Overview
 
-This is a Django-based multi-tenant SaaS boilerplate designed to provide a scalable backend solution for SaaS applications. The boilerplate is built with best practices for multi-tenancy, allowing each tenant to have its own isolated schema within the same database. The app includes features like user management, admin dashboard, public schema handling, tenant onboarding, and more.
+This is a **production-ready**, Django-based **Multi-Tenant SaaS Boilerplate** designed for developers building scalable, tenant-aware SaaS applications. Each tenant is isolated using **PostgreSQL schemas**, allowing separation of data with shared logic and infrastructure.
 
-### Key Features:
-- **Multi-Tenant Architecture**: Support for multiple tenants, each with its own isolated schema.
-- **Custom User Management**: Extends Django's `AbstractBaseUser` for custom user models with email authentication.
-- **Admin Dashboard**: Fully functional admin dashboard with CRUD operations for managing tenants and users.
-- **Shared Database**: All tenant data is stored in a single database, with separate schemas for each tenant.
-- **Onboarding and Tenant Creation**: Automated onboarding for new tenants with schema creation.
+Built with a **modular, Google-level backend architecture**, it includes tenant onboarding, isolated schemas, shared public schema, custom user authentication, an admin dashboard, and extensibility hooks for billing, plans, and more.
 
 ---
 
-## Table of Contents
+## 🔑 Main Features
+
+- ✅ **True Multi-Tenant Architecture**  
+  Isolated PostgreSQL schemas for each tenant, with automatic schema creation and routing.
+
+- 👥 **Custom User Model with Email Login**  
+  Email-based authentication with extendable fields, role-based permissions, and admin/staff logic.
+
+- 🧩 **Admin Dashboard**  
+  Django admin is enhanced for multi-tenant visibility, user and group management, and CRUD operations.
+
+- 🌐 **Public Schema Management**  
+  Common models like users, auth, and plans reside in the `public` schema, separated from tenant-specific data.
+
+- ⚙️ **Tenant Onboarding & Schema Setup**  
+  Easily onboard new tenants with one command — schema and domain setup handled automatically.
+
+- 🐘 **PostgreSQL with UUID Support**  
+  Uses `uuid-ossp` and `pgcrypto` extensions for secure, unique IDs across schemas.
+
+- 🧪 **Seeded DevOps Bootstrap**  
+  Comes with a `devops/` folder including Docker, environment setup, and schema seeding for quick dev.
+
+---
+
+## 📦 Table of Contents
 
 - [Installation](#installation)
-- [Features](#features)
+- [Functionality](#functionality)
 - [Configuration](#configuration)
 - [Usage](#usage)
-- [Running Migrations](#running-migrations)
 - [Admin Dashboard](#admin-dashboard)
 - [Troubleshooting](#troubleshooting)
 - [License](#license)
 
 ---
 
-## Installation
+## 🚀 Installation
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/solo925/Multi-Tenant-SaaS-Boilerplate
-   cd multi-tenant-saas
-   ```
+### 1. Clone the Repository
 
-2. **Set Up Virtual Environment**:
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
+```bash
+git clone https://github.com/solo925/Multi-Tenant-SaaS-Boilerplate
+cd multi-tenant-saas
+```
 
-3. **Install Dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+### 2. Set Up Environment
 
-4. **Set Up Database**:
-   Create a PostgreSQL database and configure your `.env` or `settings.py` to point to it.
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
 
-   Example configuration in `.env`:
-   ```env
-   DATABASE_URL=postgres://user:password@localhost:5432/multi_tenant_saas
-   ```
+### 3. Install Dependencies
 
----
+```bash
+pip install -r requirements.txt
+```
 
-## Features
+### 4. Configure `.env`
 
-### Multi-Tenant Support
-
-- **Tenant Isolation**: Each tenant has a separate schema within the same database.
-- **Shared Database**: Public models (like user management) are stored in the `public` schema, while tenant-specific data is in each tenant’s own schema.
-- **Tenant Creation**: New tenants are onboarded with automatic schema creation.
-
-### Custom User Model
-
-- **Email Authentication**: The custom user model uses email as the unique identifier instead of the default username.
-- **Permissions**: Each user has roles (e.g., admin, staff) and permissions through Django's `Groups` and `Permissions` system.
-- **Extensibility**: You can easily extend the user model to include additional fields.
-
-### Admin Dashboard
-
-- **Tenant Management**: Admins can manage tenant data and onboard new tenants.
-- **User Management**: Admins can manage user roles, permissions, and groups through the dashboard.
-- **CRUD Operations**: Full Create, Read, Update, Delete functionality for managing tenants and users.
-
-### Public Schema
-
-- The public schema stores shared data such as authentication models and user permissions.
-  
-### Migrations
-
-- Migrations are handled across both public and tenant schemas, ensuring each tenant’s schema is kept in sync with your codebase.
+```env
+DEBUG=True
+DATABASE_URL=postgres://user:password@localhost:5432/multi_tenant_saas
+SECRET_KEY=your-secret-key
+```
 
 ---
 
-## Configuration
+## 🧠 Functionality
 
-1. **Database Configuration**: Set up your database in `.env` or directly in `settings.py`.
-   
-   Example:
-   ```python
-   DATABASES = {
-       'default': {
-           'ENGINE': 'django.db.backends.postgresql',
-           'NAME': 'your_db_name',
-           'USER': 'your_db_user',
-           'PASSWORD': 'your_db_password',
-           'HOST': 'localhost',
-           'PORT': '5432',
-       }
-   }
-   ```
+### 🔐 Authentication
 
-2. **Tenant Configuration**: In your settings, specify how tenants are handled. Use `django-tenants` for multi-tenant support.
+- Uses Django's custom user model with email login.
+- Integrated role/group/permissions via Django's permission system.
+
+### 🏢 Tenant Isolation
+
+- Tenant schemas created automatically via onboarding commands.
+- Supports subdomain and schema-based routing.
+- Shared user model in `public` schema; tenant models isolated.
+
+### 🖥️ Admin Panel
+
+- Custom dashboard powered by Django admin.
+- Full CRUD for tenants, users, roles, and public schema data.
+- Easily extendable to include plans, usage, and billing.
+
+### 🧱 DevOps Structure
+
+- Docker and PostgreSQL config inside `/devops`.
+- Seed tenant(s), superuser, and billing plans via SQL.
+- Bootstrap shell script for team development.
 
 ---
 
-## Usage
+## ⚙️ Configuration
 
-### Starting the Server
+Edit database connection in `.env` or `settings.py`:
 
-To start the development server, run:
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'multi_tenant_saas',
+        'USER': 'your_db_user',
+        'PASSWORD': 'your_db_password',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
+```
+
+Ensure `django-tenants` is configured correctly in your settings:
+
+```python
+TENANT_MODEL = "clients.Client"
+TENANT_DOMAIN_MODEL = "clients.Domain"
+```
+
+---
+
+## 💻 Usage
+
+### Start the Server
+
 ```bash
 python manage.py runserver
 ```
 
-### Creating a Superuser
+### Create a Superuser
 
-To create an admin superuser for your application, run:
 ```bash
 python manage.py createsuperuser
 ```
 
-### Onboarding New Tenants
+### Create a Tenant
 
-To add a new tenant, run the following command:
 ```bash
-python manage.py create_tenant --name "tenant_name" --schema "tenant_schema"
+python manage.py create_tenant --name "Tenant One" --schema "tenant1"
 ```
 
-This will create a new tenant with the specified schema and a public user set up.
+This will:
+- Create the tenant's schema
+- Link a subdomain/domain
+- Migrate tenant-specific models
 
-### Running Migrations
+### Run Migrations
 
-For regular migrations (both public and tenant schemas):
 ```bash
 python manage.py migrate_schemas --shared
 ```
 
-This command ensures that migrations are applied across all tenant schemas as well as the public schema.
+---
+
+## 🛠 Admin Dashboard
+
+Visit [http://localhost:8000/admin](http://localhost:8000/admin) to access the admin panel.
+
+Manage:
+- 🔐 Users
+- 🏢 Tenants
+- 🛡️ Roles & Groups
+- 📦 Billing Plans (optional)
 
 ---
 
-## Admin Dashboard
+## 🧯 Troubleshooting
 
-Access the admin dashboard at:
+### 🧨 `relation "users_user" does not exist`
 
+> Run:
+```bash
+python manage.py migrate_schemas --shared
 ```
-http://localhost:8000/admin
-```
 
-Log in with the superuser credentials and use the admin panel to manage:
+### ❌ `Tenant Schema Not Found`
 
-- **Users**: Add, edit, and delete users.
-- **Groups and Permissions**: Assign users to different groups and manage their permissions.
-- **Tenants**: View tenant data, onboard new tenants, and delete tenants.
+> Ensure tenant was created and schema exists. Confirm correct domain and schema name.
 
 ---
 
-## Troubleshooting
+## 📄 License
 
-If you encounter any issues, try the following:
-
-### `ProgrammingError: relation "users_user" does not exist`
-- Ensure that migrations have been applied correctly. Try running:
-  ```bash
-  python manage.py migrate_schemas --shared
-  ```
-
-### `Tenant Schema Not Found`
-- Check that the schema for the tenant was created successfully during onboarding. Ensure the correct database URL and schema name are set.
-
----
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
 

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Tenant Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="mb-4">Welcome, {{ request.user.full_name|default:request.user.email }}</h1>
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Tenant Info</h5>
+          <p class="card-text"><strong>Schema:</strong> {{ connection.schema_name }}</p>
+          <p class="card-text"><strong>User:</strong> {{ request.user.email }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

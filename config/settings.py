@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-# BASE PATH
+
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
@@ -94,7 +94,8 @@ AUTH_USER_MODEL = 'users.User'
 
 
 MIDDLEWARE = [
-    'django_tenants.middleware.main.TenantMainMiddleware',  # Django Tenants Middleware
+     'apps.common.middleware.TimingMiddleware',
+    'django_tenants.middleware.main.TenantMainMiddleware', 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -105,6 +106,8 @@ MIDDLEWARE = [
 ]
 
 
+
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -113,7 +116,7 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
-                'django.template.context_processors.request',  # Important for auth views
+                'django.template.context_processors.request',  
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
