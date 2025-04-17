@@ -30,7 +30,7 @@ This is a Django-based multi-tenant SaaS boilerplate designed to provide a scala
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/multi-tenant-saas.git
+   git clone https://github.com/solo925/Multi-Tenant-SaaS-Boilerplate
    cd multi-tenant-saas
    ```
 
