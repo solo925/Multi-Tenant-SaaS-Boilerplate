@@ -2,12 +2,21 @@ import os
 from pathlib import Path
 
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+# Load environment variables from .env if present
+from dotenv import load_dotenv
+load_dotenv()
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+print("TEMPLATE DIRS:", BASE_DIR / 'templates')
 
 
 from django_tenants.utils import get_tenant_domain_model
 
-if os.environ.get('SCHEMA_NAME', 'public') == 'public':
+# Set AUTH_USER_MODEL based on schema context
+SCHEMA_NAME = os.environ.get('SCHEMA_NAME', 'public')
+if SCHEMA_NAME == 'public':
     AUTH_USER_MODEL = 'shared_users.PublicUser'
 else:
     AUTH_USER_MODEL = 'users.User'
@@ -71,6 +80,9 @@ TENANT_APPS = (
     'apps.billing',
 )
 
+# 'DIRS': [BASE_DIR / 'templates'],
+# 'APP_DIRS': True,
+
 TENANT_MODEL = "tenants.Client"
 TENANT_DOMAIN_MODEL = "tenants.Domain"
 
@@ -79,9 +91,9 @@ DATABASES = {
         'ENGINE': 'django_tenants.postgresql_backend',
         'NAME': os.environ.get('DB_NAME', 'multitenant_saas'),
         'USER': os.environ.get('DB_USER', 'saasadmin'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'supersecret123'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'admin'),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '5432'),
+        'PORT': os.environ.get('DB_PORT', '5433'),
     }
 }
 
@@ -90,11 +102,8 @@ DATABASE_ROUTERS = (
 )
 
 
-AUTH_USER_MODEL = 'users.User'
-
-
 MIDDLEWARE = [
-     'apps.common.middleware.TimingMiddleware',
+    'apps.common.middleware.TimingMiddleware',
     'django_tenants.middleware.main.TenantMainMiddleware', 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -134,3 +143,5 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+ROOT_URLCONF = 'config.urls'

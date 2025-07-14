@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import plans_view
+from .views import plans_view, subscribe_to_plan, mock_checkout
 
 urlpatterns = [
     path('plans/', plans_view, name='plans'),
