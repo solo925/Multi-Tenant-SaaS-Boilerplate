@@ -14,12 +14,8 @@ print("TEMPLATE DIRS:", BASE_DIR / 'templates')
 
 from django_tenants.utils import get_tenant_domain_model
 
-# Set AUTH_USER_MODEL based on schema context
-SCHEMA_NAME = os.environ.get('SCHEMA_NAME', 'public')
-if SCHEMA_NAME == 'public':
-    AUTH_USER_MODEL = 'shared_users.PublicUser'
-else:
-    AUTH_USER_MODEL = 'users.User'
+# Set AUTH_USER_MODEL globally to users.User
+AUTH_USER_MODEL = 'users.User'
 
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key')
@@ -60,6 +56,11 @@ SHARED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'apps.users', 
+    'apps.dashboard',
+    'apps.billing',
+   
+
 )
 
 TENANT_APPS = (
@@ -75,9 +76,7 @@ TENANT_APPS = (
     'crispy_bootstrap5',
 
     # Local tenant-specific apps
-    'apps.users',
-    'apps.dashboard',
-    'apps.billing',
+ 
 )
 
 # 'DIRS': [BASE_DIR / 'templates'],
@@ -145,3 +144,7 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 ROOT_URLCONF = 'config.urls'
+
+LOGIN_URL = 'login'
+
+LOGIN_REDIRECT_URL = 'dashboard'
