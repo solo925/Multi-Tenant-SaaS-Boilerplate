@@ -1,0 +1,27 @@
+# GitHub language detection overrides
+# Treat template files as Django templates, not plain HTML
+templates/**/*.html linguist-language=Django
+
+# # Mark static assets and configuration files as non-code
+# *.md linguist-documentation
+# *.txt linguist-documentation
+# *.yml linguist-detectable=false
+# *.yaml linguist-detectable=false
+# *.json linguist-detectable=false
+# *.conf linguist-detectable=false
+# *.sh linguist-detectable=false
+# *.ps1 linguist-detectable=false
+
+# Mark vendor/generated files
+static/** linguist-vendored
+staticfiles/** linguist-vendored
+venv/** linguist-vendored
+node_modules/** linguist-vendored
+
+# Ensure Python files are properly detected
+*.py linguist-language=Python
+manage.py linguist-language=Python
+
+# Mark Django-specific files as Python
+apps/**/*.py linguist-language=Python
+config/**/*.py linguist-language=Python
