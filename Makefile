@@ -46,6 +46,17 @@ test:
 	@echo "Running tests..."
 	. $(ACTIVATE) && python manage.py test
 
+# Clear cache (dev helper)
+cache-clear:
+	@echo "Clearing cache..."
+	. $(ACTIVATE) && python - <<'PY'
+from django.conf import settings
+from django.core.cache import cache
+print('Cache backend:', settings.CACHES['default']['BACKEND'])
+cache.clear()
+print('Cache cleared')
+PY
+
 # Clean up pycache files and other temporary files
 clean:
 	@echo "Cleaning up..."

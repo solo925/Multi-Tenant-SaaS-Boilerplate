@@ -67,6 +67,34 @@ INSTALLED_APPS = [
     'apps.shared_users',
 ]
 
+# Caching (locmem by default; swap for Redis in production)
+REDIS_URL = os.environ.get('REDIS_URL')
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': REDIS_URL,
+            'TIMEOUT': 300,
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'multitenant-saas-cache',
+            'TIMEOUT': 300,
+        }
+    }
+
+# Cache TTLs (seconds)
+DASHBOARD_CACHE_TTL = int(os.environ.get('DASHBOARD_CACHE_TTL', '120'))
+ANALYTICS_CACHE_TTL = int(os.environ.get('ANALYTICS_CACHE_TTL', '300'))
+SYSTEM_SETTINGS_CACHE_TTL = int(os.environ.get('SYSTEM_SETTINGS_CACHE_TTL', '600'))
+
+# Dev email backend
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 # Django Tenants
 SHARED_APPS = (
     'django_tenants',    
@@ -159,6 +187,7 @@ TEMPLATES = [
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'assets'] if (BASE_DIR / 'assets').exists() else []
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -183,5 +212,5 @@ CSRF_COOKIE_HTTPONLY = False
 ROOT_URLCONF = 'config.urls'
 
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'dashboard'
+LOGIN_REDIRECT_URL = 'dashboard:dashboard'
 LOGOUT_REDIRECT_URL = 'login'

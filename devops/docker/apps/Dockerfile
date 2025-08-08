@@ -12,4 +12,8 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
+# Create non-root user for security
+RUN useradd -ms /bin/bash appuser
+USER appuser
+
 COPY . /code/

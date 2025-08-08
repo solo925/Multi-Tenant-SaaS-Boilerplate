@@ -13,6 +13,8 @@ from .models import Project
 from .forms import ProjectForm
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_protect
+from django.core.cache import cache
+from django.conf import settings
 import csv
 
 @login_required
@@ -35,17 +37,24 @@ def dashboard_view(request):
     if hasattr(sub, 'plan') and sub.plan:
         is_trial = 'trial' in sub.plan.name.lower()
 
-    # Real data metrics
-    users_count = User.objects.count()
-    active_subscriptions_count = Subscription.objects.filter(active=True, end_date__gte=now().date()).count()
-    monthly_revenue = (
-        Payment.objects.filter(date__year=now().year, date__month=now().month)
-        .aggregate(total=Sum('amount'))
-        .get('total')
-        or Decimal('0.00')
+    # Real data metrics (cached)
+    cache_ttl = getattr(settings, 'DASHBOARD_CACHE_TTL', 120)
+    users_count = cache.get_or_set('dash:users_count', lambda: User.objects.count(), cache_ttl)
+    active_subscriptions_count = cache.get_or_set(
+        'dash:active_subscriptions_count',
+        lambda: Subscription.objects.filter(active=True, end_date__gte=now().date()).count(),
+        cache_ttl,
+    )
+    monthly_revenue = cache.get_or_set(
+        'dash:monthly_revenue',
+        lambda: (
+            Payment.objects.filter(date__year=now().year, date__month=now().month)
+            .aggregate(total=Sum('amount')).get('total') or Decimal('0.00')
+        ),
+        cache_ttl,
     )
     recent_payments = (
-        Payment.objects.select_related('user').order_by('-date')[:5]
+        Payment.objects.select_related('user').only('user__email', 'amount', 'date').order_by('-date')[:5]
     )
     recent_users = User.objects.order_by('-date_joined')[:5]
     days_left = (sub.end_date - now().date()).days if sub and sub.end_date else None
@@ -70,28 +79,46 @@ def analytics_view(request):
     today = now().date()
     month_start = today.replace(day=1)
 
-    users_total = User.objects.count()
-    users_new_month = User.objects.filter(date_joined__date__gte=month_start).count()
-    active_subscriptions = Subscription.objects.filter(active=True, end_date__gte=today).count()
-    revenue_month = (
-        Payment.objects.filter(date__date__gte=month_start)
-        .aggregate(total=Sum('amount')).get('total') or Decimal('0.00')
+    cache_ttl = getattr(settings, 'ANALYTICS_CACHE_TTL', 300)
+    users_total = cache.get_or_set('analytics:users_total', lambda: User.objects.count(), cache_ttl)
+    users_new_month = cache.get_or_set(
+        'analytics:users_new_month',
+        lambda: User.objects.filter(date_joined__date__gte=month_start).count(),
+        cache_ttl,
+    )
+    active_subscriptions = cache.get_or_set(
+        'analytics:active_subs',
+        lambda: Subscription.objects.filter(active=True, end_date__gte=today).count(),
+        cache_ttl,
+    )
+    revenue_month = cache.get_or_set(
+        'analytics:revenue_month',
+        lambda: (Payment.objects.filter(date__date__gte=month_start).aggregate(total=Sum('amount')).get('total') or Decimal('0.00')),
+        cache_ttl,
     )
 
-    revenue_series = (
-        Payment.objects.filter(date__date__gte=month_start)
-        .annotate(day=TruncDate('date'))
-        .values('day')
-        .annotate(total=Sum('amount'))
-        .order_by('day')
+    revenue_series = cache.get_or_set(
+        'analytics:revenue_series',
+        lambda: list(
+            Payment.objects.filter(date__date__gte=month_start)
+            .annotate(day=TruncDate('date'))
+            .values('day')
+            .annotate(total=Sum('amount'))
+            .order_by('day')
+        ),
+        cache_ttl,
     )
 
-    signups_series = (
-        User.objects.filter(date_joined__date__gte=month_start)
-        .annotate(day=TruncDate('date_joined'))
-        .values('day')
-        .annotate(count=Count('id'))
-        .order_by('day')
+    signups_series = cache.get_or_set(
+        'analytics:signups_series',
+        lambda: list(
+            User.objects.filter(date_joined__date__gte=month_start)
+            .annotate(day=TruncDate('date_joined'))
+            .values('day')
+            .annotate(count=Count('id'))
+            .order_by('day')
+        ),
+        cache_ttl,
     )
 
     context = {
@@ -99,8 +126,8 @@ def analytics_view(request):
         'users_new_month': users_new_month,
         'active_subscriptions': active_subscriptions,
         'revenue_month': revenue_month,
-        'revenue_series': list(revenue_series),
-        'signups_series': list(signups_series),
+        'revenue_series': revenue_series,
+        'signups_series': signups_series,
     }
     return render(request, 'dashboard/analytics.html', context)
 

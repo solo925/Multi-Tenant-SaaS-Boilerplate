@@ -104,6 +104,24 @@ SECRET_KEY=your-secret-key
 
 ---
 
+## ⚡ Performance
+
+- DB indexes & constraint for billing (fast queries, single active subscription per user)
+- Cached KPIs and analytics (configurable TTLs)
+- Query optimization for dashboard feed
+
+See `OPTIMIZATIONS.md` for details.
+
+### 🧪 Development Tips
+
+- Caching
+  - Uses in‑memory cache by default. To use Redis locally, set `REDIS_URL=redis://localhost:6379/1`.
+  - Clear cache via Makefile: `make cache-clear`.
+- Email
+  - In `DEBUG=True`, emails print to console (no SMTP needed).
+
+---
+
 ## ⚙️ Configuration
 
 Edit database connection in `.env` or `settings.py`:
