@@ -9,6 +9,11 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from apps.users.models import User
 from apps.billing.models import Subscription, Payment
+from .models import Project
+from .forms import ProjectForm
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_protect
+import csv
 
 @login_required
 def dashboard_view(request):
@@ -98,3 +103,49 @@ def analytics_view(request):
         'signups_series': list(signups_series),
     }
     return render(request, 'dashboard/analytics.html', context)
+
+
+@login_required
+def export_report_view(request):
+    # Simple CSV export for projects and revenue this month
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="report.csv"'
+    writer = csv.writer(response)
+
+    writer.writerow(["Section", "Metric", "Value"]) 
+    # KPIs
+    today = now().date()
+    month_start = today.replace(day=1)
+    revenue_month = (
+        Payment.objects.filter(date__date__gte=month_start)
+        .aggregate(total=Sum('amount')).get('total') or Decimal('0.00')
+    )
+    writer.writerow(["KPIs", "Revenue (month)", revenue_month])
+    writer.writerow(["KPIs", "Users (total)", User.objects.count()])
+
+    # Projects for user
+    writer.writerow([])
+    writer.writerow(["Projects for", request.user.email])
+    writer.writerow(["Name", "Description", "Created At"]) 
+    for p in Project.objects.filter(owner=request.user).order_by('-created_at'):
+        writer.writerow([p.name, p.description, p.created_at.isoformat()])
+
+    return response
+
+
+@login_required
+@csrf_protect
+def create_project_view(request):
+    if request.method == 'POST':
+        form = ProjectForm(request.POST)
+        if form.is_valid():
+            project = form.save(commit=False)
+            project.owner = request.user
+            project.tenant_schema_name = getattr(connection, 'schema_name', 'public')
+            project.save()
+            messages.success(request, 'Project created.')
+            return redirect('dashboard:dashboard')
+        messages.error(request, 'Please correct the errors in the form.')
+    else:
+        form = ProjectForm()
+    return render(request, 'dashboard/create_project.html', {'form': form})

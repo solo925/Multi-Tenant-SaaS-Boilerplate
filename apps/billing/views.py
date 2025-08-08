@@ -23,7 +23,7 @@ def subscribe_to_plan(request, plan_id):
     )  # type: ignore
 
     messages.success(request, f"You subscribed to {plan.name}")
-    return redirect('dashboard')
+    return redirect('dashboard:dashboard')
 
 
 @login_required
@@ -32,7 +32,7 @@ def mock_checkout(request, plan_id):
     # Here, redirect to Stripe Checkout in real integration
     Payment.objects.create(user=request.user, amount=plan.price, status="paid")  # type: ignore
     messages.success(request, "Payment successful (mock)!")
-    return redirect('subscribe', plan_id=plan.id)
+    return redirect('billing:subscribe', plan_id=plan.id)
 
 
 def plans_view(request):

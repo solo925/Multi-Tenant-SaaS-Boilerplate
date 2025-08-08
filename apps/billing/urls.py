@@ -1,6 +1,8 @@
 from django.urls import path
 from .views import plans_view, subscribe_to_plan, mock_checkout
 
+app_name = 'billing'
+
 urlpatterns = [
     path('plans/', plans_view, name='plans'),
     path('subscribe/<int:plan_id>/', subscribe_to_plan, name='subscribe'),
