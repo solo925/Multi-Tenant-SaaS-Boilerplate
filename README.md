@@ -98,9 +98,11 @@ SECRET_KEY=your-secret-key
 
 ### 🧱 DevOps Structure
 
-- Docker and PostgreSQL config inside `/devops`.
-- Seed tenant(s), superuser, and billing plans via SQL.
-- Bootstrap shell script for team development.
+- **Docker**: Full-stack development environment with PostgreSQL, Redis, and Nginx
+- **Database Backup**: Automated backup scripts with WAL archiving for point-in-time recovery
+- **Load Testing**: Comprehensive Locust-based load testing with multiple user scenarios
+- **Chaos Engineering**: Container restart and network latency simulation for resilience testing
+- **Environment Management**: Template configurations for development and production
 
 ---
 
@@ -114,11 +116,59 @@ See `OPTIMIZATIONS.md` for details.
 
 ### 🧪 Development Tips
 
-- Caching
+- **Caching**
   - Uses in‑memory cache by default. To use Redis locally, set `REDIS_URL=redis://localhost:6379/1`.
   - Clear cache via Makefile: `make cache-clear`.
-- Email
+- **Email**
   - In `DEBUG=True`, emails print to console (no SMTP needed).
+
+### 🐳 Docker Development
+
+```bash
+# Start all services (web, database, redis)
+cd devops/docker
+docker compose up -d
+
+# Access application
+open http://localhost:8000
+
+# View logs
+docker compose logs -f web
+
+# Database backup
+./backup.sh full
+
+# Stop services
+docker compose down
+```
+
+### 📊 Load Testing
+
+```bash
+# Install Locust
+pip install locust
+
+# Start your app
+docker compose -f devops/docker/docker-compose.yml up -d
+
+# Run tests (PowerShell on Windows)
+.\devops\loadtest\run_tests.ps1 -Scenario smoke
+.\devops\loadtest\run_tests.ps1 -Scenario ui  # Web interface
+
+# Or use Locust directly
+locust -f devops/loadtest/locustfile.py
+```
+
+### ⚡ Chaos Engineering
+
+```bash
+# Random container restarts (test resilience)
+# Windows
+.\devops\chaos\docker-chaos.ps1 -DurationMinutes 5
+
+# Linux/macOS  
+bash devops/chaos/docker-chaos.sh 300 5 20
+```
 
 ---
 
