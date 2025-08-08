@@ -1,11 +1,99 @@
 {% extends 'base.html' %}
+{% block title %}Create Tenant - Multi-Tenant SaaS{% endblock %}
 {% block content %}
-<div class="col-md-6 offset-md-3 mt-4">
-  <h2>Create Tenant</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button class="btn btn-primary">Create</button>
-  </form>
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0"><i class="bi bi-building me-2"></i>Create Tenant</h2>
+        <a href="{% url 'tenants:list' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-arrow-left me-1"></i>Back to Tenants
+        </a>
+      </div>
+
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          {% if form.non_field_errors %}
+          <div class="alert alert-danger" role="alert">
+            {{ form.non_field_errors|join:', ' }}
+          </div>
+          {% endif %}
+
+          <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-3">
+              <label class="form-label">Tenant Name</label>
+              <input type="text" name="name" value="{{ form.name.value|default:'' }}"
+                     class="form-control {% if form.name.errors %}is-invalid{% endif %}" placeholder="Acme Inc" required>
+              {% if form.name.errors %}
+              <div class="invalid-feedback">{{ form.name.errors.0 }}</div>
+              {% else %}
+              <div class="form-text">A friendly name for this tenant.</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Schema Name</label>
+              <input type="text" name="schema_name" value="{{ form.schema_name.value|default:'' }}"
+                     class="form-control {% if form.schema_name.errors %}is-invalid{% endif %}" placeholder="tenant1" required>
+              {% if form.schema_name.errors %}
+              <div class="invalid-feedback">{{ form.schema_name.errors.0 }}</div>
+              {% else %}
+              <div class="form-text">Only letters, numbers and hyphens. "public" is reserved.</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Primary Domain</label>
+              <input type="text" name="domain" value="{{ form.domain.value|default:'' }}"
+                     class="form-control {% if form.domain.errors %}is-invalid{% endif %}" placeholder="tenant1.localhost" required>
+              {% if form.domain.errors %}
+              <div class="invalid-feedback">{{ form.domain.errors.0 }}</div>
+              {% else %}
+              <div class="form-text">Example: tenant1.localhost (for local dev).</div>
+              {% endif %}
+            </div>
+
+            <div class="form-check mb-4">
+              <input class="form-check-input" type="checkbox" name="on_trial" id="onTrial"
+                     {% if form.on_trial.value or form.on_trial.value is None %}checked{% endif %}>
+              <label class="form-check-label" for="onTrial">Start on trial</label>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check2-circle me-1"></i>Create Tenant
+              </button>
+              <a href="{% url 'tenants:list' %}" class="btn btn-light">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+// Optional helper: suggest schema/domain from name
+document.addEventListener('DOMContentLoaded', function () {
+  const nameInput = document.querySelector('input[name="name"]');
+  const schemaInput = document.querySelector('input[name="schema_name"]');
+  const domainInput = document.querySelector('input[name="domain"]');
+
+  function slugify(text) {
+    return String(text || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '')
+      .substring(0, 63);
+  }
+
+  nameInput && nameInput.addEventListener('input', function () {
+    const slug = slugify(this.value);
+    if (!schemaInput.value) schemaInput.value = slug;
+    if (!domainInput.value) domainInput.value = (slug ? slug : 'tenant') + '.localhost';
+  });
+});
+</script>
 {% endblock %}

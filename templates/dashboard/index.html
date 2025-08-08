@@ -8,7 +8,7 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h1 class="h3 mb-1">Welcome back, {{ request.user.first_name|default:"User" }}! 👋</h1>
+                    <h1 class="h3 mb-1">Welcome back, {{ request.user.full_name|default:request.user.email }}! 👋</h1>
                     <p class="text-muted mb-0">Here's what's happening with your SaaS platform today.</p>
                 </div>
                 <div class="d-flex gap-2">
@@ -36,7 +36,7 @@
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <div class="small text-muted">Total Users</div>
-                            <div class="h4 mb-0">2,847</div>
+                            <div class="h4 mb-0">{{ users_count }}</div>
                             <div class="small text-success">
                                 <i class="bi bi-arrow-up"></i> 12% from last month
                             </div>
@@ -57,7 +57,7 @@
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <div class="small text-muted">Monthly Revenue</div>
-                            <div class="h4 mb-0">$24,567</div>
+                            <div class="h4 mb-0">${{ monthly_revenue }}</div>
                             <div class="small text-success">
                                 <i class="bi bi-arrow-up"></i> 8% from last month
                             </div>
@@ -77,8 +77,8 @@
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <div class="small text-muted">Active Projects</div>
-                            <div class="h4 mb-0">156</div>
+                            <div class="small text-muted">Active Subscriptions</div>
+                            <div class="h4 mb-0">{{ active_subscriptions_count }}</div>
                             <div class="small text-warning">
                                 <i class="bi bi-dash"></i> 2% from last month
                             </div>
@@ -98,8 +98,8 @@
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <div class="small text-muted">Uptime</div>
-                            <div class="h4 mb-0">99.9%</div>
+                            <div class="small text-muted">Days Left in Plan</div>
+                            <div class="h4 mb-0">{{ days_left|default:"—" }}</div>
                             <div class="small text-success">
                                 <i class="bi bi-check-circle"></i> Excellent
                             </div>
@@ -129,7 +129,7 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label text-muted small">Schema Name</label>
-                                <div class="fw-semibold">{{ connection.schema_name|default:"public" }}</div>
+                                <div class="fw-semibold">{{ schema_name|default:"public" }}</div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label text-muted small">User Email</label>
@@ -173,12 +173,12 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <button class="btn btn-outline-primary text-start">
+                        <a class="btn btn-outline-primary text-start" href="{% url 'tenants:create' %}">
                             <i class="bi bi-plus-circle me-2"></i>Create New Tenant
-                        </button>
-                        <button class="btn btn-outline-success text-start">
-                            <i class="bi bi-people me-2"></i>Manage Users
-                        </button>
+                        </a>
+                        <a class="btn btn-outline-success text-start" href="{% url 'tenants:list' %}">
+                            <i class="bi bi-people me-2"></i>Manage Tenants
+                        </a>
                         <button class="btn btn-outline-info text-start">
                             <i class="bi bi-gear me-2"></i>System Settings
                         </button>
@@ -208,44 +208,22 @@
                 </div>
                 <div class="card-body">
                     <div class="timeline">
+                        {% for p in recent_payments %}
                         <div class="d-flex align-items-start mb-3">
                             <div class="flex-shrink-0">
                                 <div class="bg-success rounded-circle p-2">
-                                    <i class="bi bi-check text-white"></i>
+                                    <i class="bi bi-currency-dollar text-white"></i>
                                 </div>
                             </div>
                             <div class="flex-grow-1 ms-3">
-                                <div class="fw-semibold">New user registered</div>
-                                <div class="text-muted small">john.doe@example.com joined your platform</div>
-                                <div class="text-muted small">2 hours ago</div>
+                                <div class="fw-semibold">Payment received</div>
+                                <div class="text-muted small">{{ p.user.email }} paid ${{ p.amount }}</div>
+                                <div class="text-muted small">{{ p.date|date:"M d, Y H:i" }}</div>
                             </div>
                         </div>
-                        
-                        <div class="d-flex align-items-start mb-3">
-                            <div class="flex-shrink-0">
-                                <div class="bg-primary rounded-circle p-2">
-                                    <i class="bi bi-upload text-white"></i>
-                                </div>
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <div class="fw-semibold">Data backup completed</div>
-                                <div class="text-muted small">Scheduled backup finished successfully</div>
-                                <div class="text-muted small">4 hours ago</div>
-                            </div>
-                        </div>
-                        
-                        <div class="d-flex align-items-start mb-3">
-                            <div class="flex-shrink-0">
-                                <div class="bg-warning rounded-circle p-2">
-                                    <i class="bi bi-exclamation text-white"></i>
-                                </div>
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <div class="fw-semibold">System maintenance scheduled</div>
-                                <div class="text-muted small">Maintenance window: Tomorrow 2:00 AM - 4:00 AM</div>
-                                <div class="text-muted small">1 day ago</div>
-                            </div>
-                        </div>
+                        {% empty %}
+                        <div class="text-muted">No recent payments.</div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>

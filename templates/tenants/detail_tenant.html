@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Tenant Details - {{ tenant.name }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h2 class="h4 mb-0"><i class="bi bi-building me-2"></i>{{ tenant.name }}</h2>
+      <div class="text-muted small">Schema: <code>{{ tenant.schema_name }}</code></div>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'tenants:list' %}">
+      <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="small text-muted">Users</div>
+          <div class="display-6 fw-semibold">{{ metrics.users_count }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="small text-muted">Active Subscriptions</div>
+          <div class="display-6 fw-semibold">{{ metrics.active_subscriptions_count }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="small text-muted">Monthly Revenue</div>
+          <div class="display-6 fw-semibold">${{ metrics.monthly_revenue|default:0 }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-0 pb-0">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0"><i class="bi bi-globe me-2"></i>Domains</h5>
+        <form method="post" action="{% url 'tenants:domain_add' tenant.pk %}" class="d-flex gap-2 align-items-end">
+          {% csrf_token %}
+          <div>
+            <label class="form-label small mb-1">Add Domain</label>
+            <input type="text" name="domain" class="form-control form-control-sm" placeholder="tenant.localhost" required>
+          </div>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="is_primary" id="isPrimary">
+            <label class="form-check-label small" for="isPrimary">Primary</label>
+          </div>
+          <button class="btn btn-sm btn-primary" type="submit">Add</button>
+        </form>
+      </div>
+    </div>
+    <div class="card-body">
+      <ul class="list-group list-group-flush">
+        {% for d in domains %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <span>{{ d.domain }}</span>
+          <div class="d-flex gap-2">
+            {% if d.is_primary %}<span class="badge bg-primary">Primary</span>{% else %}
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'tenants:domain_primary' tenant.pk d.pk %}">Make Primary</a>
+            {% endif %}
+            <a class="btn btn-sm btn-outline-danger" href="{% url 'tenants:domain_delete' tenant.pk d.pk %}">Delete</a>
+          </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">No domains</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm mt-3">
+    <div class="card-header bg-white border-0 pb-0">
+      <h5 class="card-title mb-0"><i class="bi bi-sliders me-2"></i>Settings</h5>
+    </div>
+    <div class="card-body">
+      <form method="post" action="{% url 'tenants:edit' tenant.pk %}">
+        {% csrf_token %}
+        <div class="row g-3 align-items-end">
+          <div class="col-md-6">
+            <label class="form-label">Name</label>
+            <input type="text" name="name" value="{{ tenant.name }}" class="form-control" required>
+          </div>
+          <div class="col-md-3 form-check mt-4">
+            <input class="form-check-input" type="checkbox" name="on_trial" id="onTrial" {% if tenant.on_trial %}checked{% endif %}>
+            <label class="form-check-label" for="onTrial">On trial</label>
+          </div>
+          <div class="col-md-12">
+            <button class="btn btn-primary" type="submit">Save Changes</button>
+            <a href="{% url 'tenants:delete' tenant.pk %}" class="btn btn-outline-danger ms-2" onclick="return confirm('Delete this tenant? This cannot be undone.');">Delete Tenant</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

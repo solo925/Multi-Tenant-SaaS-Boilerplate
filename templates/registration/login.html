@@ -37,11 +37,9 @@
 
         <!-- Social login removed -->
         <div class="mb-4"></div>
-                <div class="divider my-4">
-                    <span class="divider-text">or continue with email</span>
-                </div>
-            </div>
-        {% endif %}
+        <div class="divider my-4">
+            <span class="divider-text">or continue with email</span>
+        </div>
 
         <form method="post" class="needs-validation" novalidate>
             {% csrf_token %}
@@ -72,7 +70,7 @@
                     <label for="{{ form.password.id_for_label }}" class="form-label">
                         <i class="bi bi-lock me-2"></i>Password
                     </label>
-                    <a href="{% url 'password_reset' %}" class="auth-link small">Forgot password?</a>
+                    <a href="{% url 'account_reset_password' %}" class="auth-link small">Forgot password?</a>
                 </div>
                 <div class="position-relative">
                     <input type="password" 

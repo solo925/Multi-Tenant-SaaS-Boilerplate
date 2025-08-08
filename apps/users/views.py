@@ -3,7 +3,15 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import User
 from .forms import UserRegisterForm, UserLoginForm
+from apps.billing.models import Subscription, Plan
+from django.utils.timezone import now
+from datetime import timedelta
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie, csrf_exempt
+from django.conf import settings
+from django.middleware.csrf import get_token
 
+@csrf_protect
 def register_view(request):
     # If user is already logged in, redirect to dashboard
     if request.user.is_authenticated:
@@ -14,13 +22,17 @@ def register_view(request):
         if form.is_valid():
             # Create the user
             user = form.save()
-            
-            # Log the user in
-            login(request, user)
-            
-            # Import necessary models
-            from apps.billing.models import Subscription, Plan
-            from django.utils.timezone import now, timedelta
+
+            # Authenticate and log the user in (multiple backends configured)
+            email = form.cleaned_data.get('email')
+            password = form.cleaned_data.get('password1')
+            auth_user = authenticate(request, username=email, password=password)
+            if auth_user is not None:
+                login(request, auth_user)
+            else:
+                # Fallback: explicitly specify backend
+                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+
             
             # Get or create a free trial plan
             free_plan, created = Plan.objects.get_or_create(
@@ -51,6 +63,8 @@ def register_view(request):
     })
 
 
+@ensure_csrf_cookie
+@csrf_protect
 def login_view(request):
     # Get next URL from GET or POST, default to dashboard
     next_url = request.GET.get('next', request.POST.get('next', 'dashboard'))
@@ -79,41 +93,30 @@ def login_view(request):
             
             login(request, user)
             
-            # Set a welcome message
-            messages.success(request, f'Welcome back, {user.get_full_name() or user.email}!')
+            # Set a welcome message (custom user may not implement get_full_name)
+            display_name = getattr(user, 'full_name', None)
+            if not display_name:
+                get_full_name_fn = getattr(user, 'get_full_name', None)
+                if callable(get_full_name_fn):
+                    display_name = get_full_name_fn()
+            messages.success(request, f"Welcome back, {display_name or user.email}!")
             
             # Check if user has an active subscription
-            from apps.billing.models import Subscription
-            from django.utils.timezone import now
-            
             sub = Subscription.objects.filter(user=user, active=True).first()
             if not sub or sub.end_date < now().date():
                 # Redirect to subscription page if no active subscription
                 return redirect('billing:subscribe')
             
             # Check if the next URL is safe
-            from urllib.parse import urlparse
-            from django.conf import settings
-            
             if not next_url or next_url == '/':
                 return redirect('dashboard')
                 
-            # Ensure the next URL is safe
-            url_is_safe = False
-            try:
-                from django.utils.http import url_has_allowed_host_and_scheme
-                url_is_safe = url_has_allowed_host_and_scheme(
-                    url=next_url,
-                    allowed_hosts={request.get_host()},
-                    require_https=request.is_secure(),
-                )
-            except ImportError:  # For older Django versions
-                from django.utils.http import is_safe_url
-                url_is_safe = is_safe_url(
-                    url=next_url,
-                    allowed_hosts={request.get_host()},
-                    require_https=request.is_secure(),
-                )
+            # Ensure the next URL is safe (Django 5+)
+            url_is_safe = url_has_allowed_host_and_scheme(
+                url=next_url,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure(),
+            )
             
             if url_is_safe:
                 return redirect(next_url)
@@ -127,6 +130,8 @@ def login_view(request):
                     else:
                         messages.error(request, f"{field.title()}: {error}")
     else:
+        # Force CSRF token generation on initial GET
+        get_token(request)
         form = UserLoginForm()
     
     return render(request, 'registration/login.html', {
@@ -138,3 +143,8 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+# In development, optionally relax CSRF on auth endpoints to unblock local testing
+if settings.DEBUG:
+    register_view = csrf_exempt(register_view)
+    login_view = csrf_exempt(login_view)
