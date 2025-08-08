@@ -1,6 +1,7 @@
 from decimal import Decimal
 from django.db import connection
-from django.db.models import Sum
+from django.db.models import Sum, Count
+from django.db.models.functions import TruncDate
 from django.utils.timezone import now
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -57,3 +58,43 @@ def dashboard_view(request):
         'schema_name': getattr(connection, 'schema_name', 'public'),
     }
     return render(request, 'dashboard/index.html', context)
+
+
+@login_required
+def analytics_view(request):
+    today = now().date()
+    month_start = today.replace(day=1)
+
+    users_total = User.objects.count()
+    users_new_month = User.objects.filter(date_joined__date__gte=month_start).count()
+    active_subscriptions = Subscription.objects.filter(active=True, end_date__gte=today).count()
+    revenue_month = (
+        Payment.objects.filter(date__date__gte=month_start)
+        .aggregate(total=Sum('amount')).get('total') or Decimal('0.00')
+    )
+
+    revenue_series = (
+        Payment.objects.filter(date__date__gte=month_start)
+        .annotate(day=TruncDate('date'))
+        .values('day')
+        .annotate(total=Sum('amount'))
+        .order_by('day')
+    )
+
+    signups_series = (
+        User.objects.filter(date_joined__date__gte=month_start)
+        .annotate(day=TruncDate('date_joined'))
+        .values('day')
+        .annotate(count=Count('id'))
+        .order_by('day')
+    )
+
+    context = {
+        'users_total': users_total,
+        'users_new_month': users_new_month,
+        'active_subscriptions': active_subscriptions,
+        'revenue_month': revenue_month,
+        'revenue_series': list(revenue_series),
+        'signups_series': list(signups_series),
+    }
+    return render(request, 'dashboard/analytics.html', context)

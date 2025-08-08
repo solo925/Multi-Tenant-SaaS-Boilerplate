@@ -15,7 +15,7 @@ from django.middleware.csrf import get_token
 def register_view(request):
     # If user is already logged in, redirect to dashboard
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('dashboard:dashboard')
         
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
@@ -53,7 +53,7 @@ def register_view(request):
             )
             
             messages.success(request, 'Registration successful! Your 14-day free trial has started.')
-            return redirect('dashboard')
+            return redirect('dashboard:dashboard')
     else:
         form = UserRegisterForm()
         
@@ -67,7 +67,7 @@ def register_view(request):
 @csrf_protect
 def login_view(request):
     # Get next URL from GET or POST, default to dashboard
-    next_url = request.GET.get('next', request.POST.get('next', 'dashboard'))
+    next_url = request.GET.get('next', request.POST.get('next', 'dashboard:dashboard'))
     
     # If user is already logged in, redirect to next_url or dashboard
     if request.user.is_authenticated:
@@ -109,7 +109,7 @@ def login_view(request):
             
             # Check if the next URL is safe
             if not next_url or next_url == '/':
-                return redirect('dashboard')
+                return redirect('dashboard:dashboard')
                 
             # Ensure the next URL is safe (Django 5+)
             url_is_safe = url_has_allowed_host_and_scheme(
@@ -120,7 +120,7 @@ def login_view(request):
             
             if url_is_safe:
                 return redirect(next_url)
-            return redirect('dashboard')
+            return redirect('dashboard:dashboard')
         else:
             # Form is invalid
             for field, errors in form.errors.items():
