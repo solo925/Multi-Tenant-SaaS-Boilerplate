@@ -8,6 +8,11 @@ class UserRegisterForm(UserCreationForm):
         model = User
         fields = ('email', 'full_name')
 
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('email', 'full_name')
+
 class UserLoginForm(AuthenticationForm):
     """
     Custom login form that extends Django's built-in AuthenticationForm

@@ -17,3 +17,12 @@ class SoftDeleteModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+class SystemSetting(models.Model):
+    key = models.CharField(max_length=100, unique=True)
+    value = models.TextField(blank=True)
+    description = models.CharField(max_length=255, blank=True)
+
+    def __str__(self) -> str:
+        return f"{self.key}"

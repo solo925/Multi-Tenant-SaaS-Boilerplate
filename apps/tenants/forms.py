@@ -30,6 +30,7 @@ class EditTenantForm(forms.ModelForm):
         fields = [
             'name',
             'on_trial',
+            'is_active',
         ]
 
 

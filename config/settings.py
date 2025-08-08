@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
 
     # Local
+    'apps.common',
     'apps.users',
     'apps.tenants',
     'apps.dashboard',
@@ -77,6 +78,7 @@ SHARED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'apps.common',
     'apps.users', 
     'apps.dashboard',
     'apps.billing',

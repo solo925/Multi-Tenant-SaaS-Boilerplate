@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}System Settings{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h4 mb-0"><i class="bi bi-gear me-2"></i>System Settings</h2>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-0 pb-0">
+          <h5 class="card-title mb-0">Create Setting</h5>
+        </div>
+        <div class="card-body">
+          <form method="post" action="{% url 'common:system_settings_create' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label">Key</label>
+              <input type="text" name="key" class="form-control" required placeholder="SITE_NAME">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Value</label>
+              <textarea name="value" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Description</label>
+              <input type="text" name="description" class="form-control" placeholder="What this setting controls">
+            </div>
+            <button class="btn btn-primary" type="submit">Save</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-0 pb-0">
+          <h5 class="card-title mb-0">Existing Settings</h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            {% for s in settings %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-semibold">{{ s.key }}</div>
+                <div class="text-muted small">{{ s.description }}</div>
+                <code class="d-block mt-1">{{ s.value }}</code>
+              </div>
+              <a class="btn btn-sm btn-outline-danger" href="{% url 'common:system_settings_delete' s.pk %}">Delete</a>
+            </li>
+            {% empty %}
+            <li class="list-group-item text-muted">No settings yet.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

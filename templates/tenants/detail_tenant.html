@@ -92,6 +92,10 @@
             <input class="form-check-input" type="checkbox" name="on_trial" id="onTrial" {% if tenant.on_trial %}checked{% endif %}>
             <label class="form-check-label" for="onTrial">On trial</label>
           </div>
+          <div class="col-md-3 form-check mt-4">
+            <input class="form-check-input" type="checkbox" name="is_active" id="isActive" {% if tenant.is_active %}checked{% endif %}>
+            <label class="form-check-label" for="isActive">Active</label>
+          </div>
           <div class="col-md-12">
             <button class="btn btn-primary" type="submit">Save Changes</button>
             <a href="{% url 'tenants:delete' tenant.pk %}" class="btn btn-outline-danger ms-2" onclick="return confirm('Delete this tenant? This cannot be undone.');">Delete Tenant</a>
